@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "BlinkfilLO"
+description = "BlinkFill Implementation for Libre Office"
+authors = [
+	{name = "Landen Doty", email = "landoty@ku.edu"},
+	{name = "Jaxon Avena"}
+]
+keywords = ["synthesis", "blinkfill", "libre", "office"]
+
+requires-python = ">= 3.10"
+dependencies = []
