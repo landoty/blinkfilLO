@@ -31,7 +31,7 @@ class BaseTokens(Enum):
                     re.VERBOSE
                 )
     Alphabets = re.compile(r"""
-                    [A-Za-z]        # all alphabets
+                    [A-Za-z]+      # all alphabets
                     """,
                     re.VERBOSE
                 )
