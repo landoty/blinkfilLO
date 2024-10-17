@@ -1,7 +1,9 @@
 """ Main driver for BlinkfilLO """
 # main.py
 
-from language import BaseTokens
+from synthesizer import SynthDriver
 
 if __name__ == "__main__":
-    print(BaseTokens.Caps.value.search("BlinkFilLO"))
+    synth = SynthDriver()
+    G = synth.GenGraphStr("1 lb") # example string from BlinkFill paper
+    print(G)
