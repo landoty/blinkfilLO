@@ -1,8 +1,13 @@
 """ Definitions for the InputDataGraph """
 # graphs/input_data_graph.py
 
+from language.base_tokens import BaseTokens
+
+from typing import Union
+import re
+
 class InputDataGraph:
-    def __init__(self):
+    def __init__(self, _id: int = 0):
         """ Build an empty IDG
 
             An IDG encodes substring token matches contained within a single
@@ -14,10 +19,15 @@ class InputDataGraph:
             L: E -> {(t, k)}, labeling function/map over token matches of the
             edges
         """
+        # core member variables
         self._nodes = set()
         self._node_labels = {}
         self._edges = {}
         self._edge_labels = {}
+
+        # member variable for generation
+        self._id = _id
+        self._mId = {}
 
     ### Private Methods
     def __repr__(self):
@@ -78,6 +88,9 @@ class InputDataGraph:
             print("Token matches must be of form (t, k)")
             return False
 
+        elif not tok_match[1]:
+            return False
+
         v1, v2 = edge
         if v1 not in self._nodes or v2 not in self._nodes:
             print(f"Edge: {edge} not in InputDataGraph")
@@ -93,6 +106,8 @@ class InputDataGraph:
             self._edge_labels[v1][v2].append(tok_match)
 
     ### Public Methods
+    def get_id(self) -> int:
+        return self._id
 
     def add_node(self, node: int):
         """ Add a node to the graph """
@@ -128,3 +143,82 @@ class InputDataGraph:
         """ Label an edge """
         for l in labels:
             self._label_edge(edge, l)
+
+
+    def _populate_m2id(self, pat: re.Pattern, key: str, string: str):
+        """ Add values to the hash table of token matches """
+        self._mId[key] = {string: {}}
+
+        matches = tuple(pat.finditer(string)) # this gives us len
+        if matches:
+            has_matches = True
+        else:
+            has_matches = False
+
+        for i, m in enumerate(matches):
+            start = m.start() + 1
+            self._mId[key][string][start] = (
+                i+1,
+                i-len(matches)
+            )
+        return has_matches
+
+    def match2Id(self, pat: Union[str, BaseTokens], string: str, idx: int) -> int:
+        """ Return the ID of the pattern in string starting at index i """
+        # TODO optimize/clean
+
+        # pattern is a string => constant string
+        if isinstance(pat, str):
+            # worst-case -> search for occurrences of pat in string
+            if pat not in self._mId:
+                self._populate_m2id(re.compile(pat), pat, string)
+
+            elif idx not in self._mId[pat][string]:
+                pass
+
+            return self._mId[pat][string][idx]
+
+        # pattern is a BaseToken
+        elif isinstance(pat, BaseTokens):
+            if pat.name not in self._mId:
+                self._populate_m2id(pat.value, pat.name, string)
+            elif idx not in self._mId[pat.name][string]:
+                return None # this match isn't valid, continue
+
+            return self._mId[pat.name][string][idx]
+
+    ### Static, Public Methods
+    @staticmethod
+    def GenGraphStr(s: str, _id: int = 0):
+        """ Generate a single IDG given an input string """
+        # Init graph and get new unique string ID
+        G = InputDataGraph(_id)
+
+        # label all the nodes
+        for i in range(0, len(s) + 3):
+            G.add_node(i)
+            G.I(i, [(_id, i)])
+
+        # label the start and end symbols
+        G.L(
+            (0,1),
+            [(BaseTokens.StartT.name, 1)]
+        )
+        G.L(
+            (len(s)+1, len(s)+2),
+            [(BaseTokens.EndT.name, 1)]
+        )
+
+        # match all the substrings and label edges
+        for i in range(1, len(s) + 1):
+            for j in range(i+1, len(s) + 2):
+                idxL, idxR = i, j
+                G.add_edge((idxL, idxR))
+                substr = s[idxL-1:idxR-1]
+                G.L((i,j), [(substr, G.match2Id(substr, s, i))])
+                for t in BaseTokens:
+                    if t is BaseTokens.StartT or t is BaseTokens.EndT:
+                        continue
+                    if t.value.fullmatch(substr):
+                        G.L((i,j), [(t.name, G.match2Id(t, s, i))])
+        return G
