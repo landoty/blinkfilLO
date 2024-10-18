@@ -85,4 +85,3 @@ class BaseTokens(Enum):
                     re.VERBOSE
                 )
 
-# to do matches, do BaseToken.Caps.value.match/search/etc
