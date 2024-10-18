@@ -4,6 +4,7 @@
 from synthesizer import SynthDriver
 
 if __name__ == "__main__":
+    data = [["Mumbai, India"]]
     synth = SynthDriver()
-    G = synth.GenGraphStr("1 lb") # example string from BlinkFill paper
-    print(G)
+    IDG = synth.GenInpDataGraph(data)
+    print(IDG)
