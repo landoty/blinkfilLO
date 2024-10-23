@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:component 
+    xmlns:oor="urn:org:libreoffice:office:1.2">
+    <oor:name>MyPythonExtension</oor:name>
+    <oor:description>This extension allows interaction with Calc.</oor:description>
+    <oor:version>1.0</oor:version>
+    <oor:required>
+        <oor:feature>org.openoffice.Feature</oor:feature>
+    </oor:required>
+</oor:component>

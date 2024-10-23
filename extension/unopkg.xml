@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unopkg:unopkg xmlns:unopkg="http://openoffice.org/Unopkg">
+    <unopkg:component>
+        <unopkg:name>my_extension</unopkg:name>
+        <unopkg:description>My Python Extension for Calc</unopkg:description>
+        <unopkg:version>1.0</unopkg:version>
+        <unopkg:source>script.py</unopkg:source>
+    </unopkg:component>
+</unopkg:unopkg>
