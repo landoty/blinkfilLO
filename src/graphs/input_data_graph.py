@@ -1,13 +1,15 @@
 """ Definitions for the InputDataGraph """
 # graphs/input_data_graph.py
 
-from language.base_tokens import BaseTokens
-
 from typing import Union
 import re
 
+import pdb
+
+from language.base_tokens import BaseTokens
+
 class InputDataGraph:
-    def __init__(self, _id: int = 0):
+    def __init__(self, _id: int = -1):
         """ Build an empty IDG
 
             An IDG encodes substring token matches contained within a single
@@ -32,7 +34,7 @@ class InputDataGraph:
     ### Private Methods
     def __repr__(self):
         """ A better repr when printing a graph """
-        return str(f"{self._edge_labels} \n {self._node_labels}")
+        return str(f"{self._edge_labels} \n {self._edges}")
 
     def _label_node(self, node: int, label: tuple) -> bool:
         """ Label a single node
@@ -53,7 +55,7 @@ class InputDataGraph:
             return False
 
         elif node not in self._nodes:
-            print("Node not in InputDataGraph")
+            print(f"Node {node} not in InputDataGraph")
             return False
 
         else:
@@ -189,7 +191,7 @@ class InputDataGraph:
 
     ### Static, Public Methods
     @staticmethod
-    def GenGraphStr(s: str, _id: int = 0):
+    def GenGraphStr(s: str, _id: int = -1):
         """ Generate a single IDG given an input string """
         # Init graph and get new unique string ID
         G = InputDataGraph(_id)
@@ -222,3 +224,37 @@ class InputDataGraph:
                     if t.value.fullmatch(substr):
                         G.L((i,j), [(t.name, G.match2Id(t, s, i))])
         return G
+
+
+    @staticmethod
+    def intersect(G1, G2):
+        """ Intersect two IDGs """
+        newG = InputDataGraph()
+
+        # Intersect nodes
+        for v1 in G1._nodes:
+            for v2 in G2._nodes:
+                newG.add_node((v1, v2))
+
+        # Intersect edges
+        for vi in G1._edges:
+            for vj in G2._edges:
+                for vkl in list(zip(G1._edges[vi], G2._edges[vj])):
+                    newG.add_edge(((vi, vj), vkl))
+
+        # Intersect node labels
+        for vi in G1._nodes:
+            for vj in G2._nodes:
+                new_label = set((G1._node_labels[vi], G2._node_labels[vj]))
+                newG.I((vi, vj), [new_label])
+
+        # Intersect edge labels
+        for vi in G1._edges:
+            for vj in G2._edges:
+                for vkl in list(zip(G1._edges[vi], G2._edges[vj])):
+                    vk, vl = vkl
+                    for tok in set(G1._edge_labels[vi][vk]) & set(G2._edge_labels[vj][vl]):
+                        newG.L(((vi, vj), (vk, vl)), [tok])
+
+        # TODO: prune edges that aren't labeled
+        return newG

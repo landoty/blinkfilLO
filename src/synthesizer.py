@@ -24,10 +24,22 @@ class SynthDriver:
         else:
             return self._sId[s]
 
+    def _GenGraphColumn(self, data: list) -> IDG:
+        """ Generate the input data graph for a spreadsheet column """
+        G = IDG.GenGraphStr(data[0], self.string2Id(data[0]))
+        for i in range(1, len(data)):
+            G = IDG.intersect(
+                G,
+                IDG.GenGraphStr(
+                    data[i],
+                    self.string2Id(data[i])
+                )
+            )
+        return G
+
     def GenInpDataGraph(self, data: list[list]) -> IDG:
         """ Generate the input data graph for the spreadsheet """
         # TODO do GenGraphColumn and intersect
         for i in range(len(data)):
             for j in range(len(data[i])):
-                s = data[i][j]
-                return IDG.GenGraphStr(s, self.string2Id(s))
+                return self._GenGraphColumn(data[0])
