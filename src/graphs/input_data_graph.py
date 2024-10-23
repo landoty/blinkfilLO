@@ -114,7 +114,6 @@ class InputDataGraph:
     def add_node(self, node: int):
         """ Add a node to the graph """
         if node in self._nodes:
-            #print(f"Node {node} already in InputDataGraph")
             pass
         else:
             self._nodes.add(node)
@@ -231,23 +230,6 @@ class InputDataGraph:
         """ Intersect two IDGs """
         newG = InputDataGraph()
 
-        """ # Intersect nodes
-        for v1 in G1._nodes:
-            for v2 in G2._nodes:
-                newG.add_node((v1, v2))
-
-        # Intersect edges
-        for vi in G1._edges:
-            for vj in G2._edges:
-                for vkl in list(zip(G1._edges[vi], G2._edges[vj])):
-                    newG.add_edge(((vi, vj), vkl))
-
-        # Intersect node labels
-        for vi in G1._nodes:
-            for vj in G2._nodes:
-                new_label = set((G1._node_labels[vi], G2._node_labels[vj]))
-                newG.I((vi, vj), [new_label])"""
-
         # Intersect edge labels
         for vi in G1._edges:
             for vj in G2._edges:
@@ -264,5 +246,4 @@ class InputDataGraph:
                         newG.add_edge(((vi, vj), vkl))
                         newG.L(((vi, vj), (vk, vl)), [tok])
 
-        # TODO: prune edges that aren't labeled
         return newG
