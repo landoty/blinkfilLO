@@ -9,6 +9,8 @@ import uno
 # ├── description.xml
 # ├── unopkg.xml
 # └── other_resources/
+# zip -r blinkfiLO_extension.oxt META-INF/ extension.py description.xml unopkg.xml
+
 
 
 def connect_to_calc():
@@ -70,7 +72,7 @@ def write_to_calc(document, new_value):
     cell = sheet.getCellByPosition(1, 0)   # Write to cell B1 (1, 0)
     cell.String = new_value                # Set the new value
 
-if __name__ == "__main__":
+def main():
     doc = connect_to_calc()
     data = read_from_calc(doc)
     print(f"Read from Calc: {data}")
@@ -79,3 +81,6 @@ if __name__ == "__main__":
     # new_data = data.upper()
     
     write_to_calc(doc, "Momma")
+
+# Make functions available for LibreOffice Macros
+__all__ = ['main']

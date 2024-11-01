@@ -2,9 +2,9 @@
 <manifest:manifest xmlns:manifest="http://openoffice.org/manifest">
     <manifest:component>
         <manifest:version>1.0</manifest:version>
-        <manifest:name>My Python Extension</manifest:name>
+        <manifest:name>Libreoffice Extension</manifest:name>
         <manifest:description>This extension does XYZ.</manifest:description>
-        <manifest:homepage>http://your-homepage.com</manifest:homepage>
+        <!-- <manifest:homepage>http://your-homepage.com</manifest:homepage> -->
         <manifest:license>MIT</manifest:license>
         <manifest:dependencies>
             <manifest:dependency>org.openoffice.extension</manifest:dependency>
