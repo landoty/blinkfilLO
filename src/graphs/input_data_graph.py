@@ -202,7 +202,6 @@ class InputDataGraph:
                         )
         return G
 
-
     @staticmethod
     def intersect(G1, G2):
         """ Intersect two IDGs """
@@ -225,3 +224,28 @@ class InputDataGraph:
                             newG.add_edge((vi + vj, vk + vl))
                             newG.L((vi + vj, vk + vl), [tok])
         return newG
+
+
+    @staticmethod
+    def union(graphs: list):
+        """ Union two IDGs """
+        if len(graphs) == 1:
+            return graphs[0]
+
+        '''
+        newG = InputDataGraph()
+
+        for v1 in G1._edges:
+            for v2 in G1._edges[v1]:
+                if v1 in newG._nodes and v2 in newG._nodes:
+                    continue
+
+                newG.add_node(v1)
+                newG.I(v1, G1._node_labels[v1])
+                newG.add_node(v2)
+                newG.I(v2, G1._node_labels[v2])
+
+                newG.add_edge((v1, v2))
+                newG.L((v1, v2), G2._edge_labels[v1][v2])
+        '''
+        #pdb.set_trace()
