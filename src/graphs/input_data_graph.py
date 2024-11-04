@@ -105,6 +105,9 @@ class InputDataGraph:
             if v2 not in self._edge_labels[v1]:
                 self._edge_labels[v1][v2] = []
 
+            if tok_match[0] == 'Alphanumeric':
+                # pdb.set_trace()
+                pass
             self._edge_labels[v1][v2].append(tok_match)
 
     ### Public Methods
@@ -148,6 +151,7 @@ class InputDataGraph:
 
     def _populate_m2id(self, pat: re.Pattern, key: str, string: str):
         """ Add values to the hash table of token matches """
+        #pdb.set_trace()
         self._mId[key] = {string: {}}
 
         matches = tuple(pat.finditer(string)) # this gives us len
@@ -185,7 +189,8 @@ class InputDataGraph:
                 self._populate_m2id(pat.value, pat.name, string)
             elif idx not in self._mId[pat.name][string]:
                 return None # this match isn't valid, continue
-
+            if pat.name == 'Alphanumeric':
+                pass # pdb.set_trace()
             return self._mId[pat.name][string][idx]
 
     ### Static, Public Methods
@@ -194,34 +199,52 @@ class InputDataGraph:
         """ Generate a single IDG given an input string """
         # Init graph and get new unique string ID
         G = InputDataGraph(_id)
-
         # label all the nodes
         for i in range(0, len(s) + 3):
-            G.add_node(i)
-            G.I(i, [(_id, i)])
+            G.add_node((i,))
+            G.I((i,), [(_id, i)])
 
         # label the start and end symbols
         G.L(
-            (0,1),
+            ((0,),(1,)),
             [(BaseTokens.StartT.name, 1)]
         )
         G.L(
-            (len(s)+1, len(s)+2),
+            ((len(s)+1,), (len(s)+2,)),
             [(BaseTokens.EndT.name, 1)]
         )
 
-        # match all the substrings and label edges
+        # Add token matches
+        for tok in BaseTokens:
+            if tok is BaseTokens.StartT or tok is BaseTokens.EndT:
+                continue
+            matches = tuple(tok.value.finditer(s))
+            n = len(matches)
+            for i, span in enumerate(matches):
+                start, end = span.start() + 1, span.end() + 1
+                G.add_edge(((start,), (end,)))
+                G.L(
+                    ((start,), (end,)),
+                    [((tok.name), (i+1, i-n))]
+                )
+
+        # Add string literal matches
         for i in range(1, len(s) + 1):
             for j in range(i+1, len(s) + 2):
-                idxL, idxR = i, j
-                G.add_edge((idxL, idxR))
-                substr = s[idxL-1:idxR-1]
-                G.L((i,j), [(substr, G.match2Id(substr, s, i))])
-                for t in BaseTokens:
-                    if t is BaseTokens.StartT or t is BaseTokens.EndT:
-                        continue
-                    if t.value.fullmatch(substr):
-                        G.L((i,j), [(t.name, G.match2Id(t, s, i))])
+                idxL, idxR = i-1, j-1
+                substr = s[idxL:idxR]
+                G.add_edge(((i,), (j,)))
+
+                tok = re.compile(substr)
+                matches = tuple(tok.finditer(s))
+                n = len(matches)
+                for k, span in enumerate(matches):
+                    start, end = span.start()+1, span.end()+1
+                    if start == i and end == j:
+                        G.L(
+                            ((start,), (end,)),
+                            [((substr), (k+1, k-n))]
+                        )
         return G
 
 
@@ -230,20 +253,18 @@ class InputDataGraph:
         """ Intersect two IDGs """
         newG = InputDataGraph()
 
-        # Intersect edge labels
         for vi in G1._edges:
             for vj in G2._edges:
-                for vkl in list(zip(G1._edges[vi], G2._edges[vj])):
-                    vk, vl = vkl
-                    for tok in set(G1._edge_labels[vi][vk]) & set(G2._edge_labels[vj][vl]):
-                        # add nodes
-                        newG.add_node((vi, vj))
-                        newG.add_node((vk, vl))
-                        # add node label
-                        new_label = set((G1._node_labels[vi], G2._node_labels[vj]))
-                        newG.I((vi, vj), [new_label])
-                        # add edges
-                        newG.add_edge(((vi, vj), vkl))
-                        newG.L(((vi, vj), (vk, vl)), [tok])
-
+                for vk in G1._edges[vi]:
+                    for vl in G2._edges[vj]:
+                        for tok in set(G1._edge_labels[vi][vk]) & set(G2._edge_labels[vj][vl]):
+                            # add nodes
+                            newG.add_node(vi + vj)
+                            newG.add_node(vk + vl)
+                            # add node label
+                            new_label = set((G1._node_labels[vi], G2._node_labels[vj]))
+                            newG.I(vi + vj, [new_label])
+                            # add edges
+                            newG.add_edge((vi + vj, vk + vl))
+                            newG.L((vi + vj, vk + vl), [tok])
         return newG
