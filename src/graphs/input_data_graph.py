@@ -148,51 +148,6 @@ class InputDataGraph:
         for l in labels:
             self._label_edge(edge, l)
 
-
-    def _populate_m2id(self, pat: re.Pattern, key: str, string: str):
-        """ Add values to the hash table of token matches """
-        #pdb.set_trace()
-        self._mId[key] = {string: {}}
-
-        matches = tuple(pat.finditer(string)) # this gives us len
-        if matches:
-            has_matches = True
-        else:
-            has_matches = False
-
-        for i, m in enumerate(matches):
-            start = m.start() + 1
-            self._mId[key][string][start] = (
-                i+1,
-                i-len(matches)
-            )
-        return has_matches
-
-    def match2Id(self, pat: Union[str, BaseTokens], string: str, idx: int) -> int:
-        """ Return the ID of the pattern in string starting at index i """
-        # TODO optimize/clean
-
-        # pattern is a string => constant string
-        if isinstance(pat, str):
-            # worst-case -> search for occurrences of pat in string
-            if pat not in self._mId:
-                self._populate_m2id(re.compile(pat), pat, string)
-
-            elif idx not in self._mId[pat][string]:
-                pass
-
-            return self._mId[pat][string][idx]
-
-        # pattern is a BaseToken
-        elif isinstance(pat, BaseTokens):
-            if pat.name not in self._mId:
-                self._populate_m2id(pat.value, pat.name, string)
-            elif idx not in self._mId[pat.name][string]:
-                return None # this match isn't valid, continue
-            if pat.name == 'Alphanumeric':
-                pass # pdb.set_trace()
-            return self._mId[pat.name][string][idx]
-
     ### Static, Public Methods
     @staticmethod
     def GenGraphStr(s: str, _id: int = -1):
@@ -253,10 +208,12 @@ class InputDataGraph:
         """ Intersect two IDGs """
         newG = InputDataGraph()
 
+        # O(n^4) in worst case be avearges to O(n^2) in practice
         for vi in G1._edges:
             for vj in G2._edges:
                 for vk in G1._edges[vi]:
                     for vl in G2._edges[vj]:
+                        # all tokens that the graphs share on the new edge
                         for tok in set(G1._edge_labels[vi][vk]) & set(G2._edge_labels[vj][vl]):
                             # add nodes
                             newG.add_node(vi + vj)
