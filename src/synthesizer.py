@@ -2,6 +2,7 @@
 # src/synthesizer.py
 
 from graphs.input_data_graph import InputDataGraph as IDG
+from graphs.dag import DAG
 from language.base_tokens import BaseTokens
 
 class SynthDriver:
@@ -40,6 +41,14 @@ class SynthDriver:
     def GenInpDataGraph(self, data: list[list]) -> IDG:
         """ Generate the input data graph for the spreadsheet """
         # TODO do GenGraphColumn and intersect
+        column_graphs = []
         for i in range(len(data)):
-            for j in range(len(data[i])):
-                return self._GenGraphColumn(data[0])
+            column_graphs.append(self._GenGraphColumn(data[i]))
+
+        return(IDG.union(column_graphs))
+
+    def GenDag(self, inp_data: list, output: str, IDG: 'IDG') -> DAG:
+        """ Generate a DAG from a row of input/output example and IDG """
+        dag = DAG(len(inp_data))
+        dag.learn(inp_data, output)
+        return dag
