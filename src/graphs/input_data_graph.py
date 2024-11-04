@@ -58,8 +58,11 @@ class InputDataGraph:
             return False
 
         else:
+            if node not in self._node_labels:
+                self._node_labels[node] = []
+
             _id, i = label
-            self._node_labels[node] = (_id, i)
+            self._node_labels[node].append((_id, i))
             return True
 
     def _label_edge(self, edge: tuple, tok_match: tuple) -> bool:
@@ -95,6 +98,7 @@ class InputDataGraph:
         v1, v2 = edge
         if v1 not in self._nodes or v2 not in self._nodes:
             print(f"Edge: {edge} not in InputDataGraph")
+            return False
 
         else:
             self.add_edge(edge)
@@ -105,6 +109,7 @@ class InputDataGraph:
                 self._edge_labels[v1][v2] = []
 
             self._edge_labels[v1][v2].append(tok_match)
+            return True
 
     ### Public Methods
     def get_id(self) -> int:
@@ -152,7 +157,12 @@ class InputDataGraph:
         r: right position
         sid: unique string index
         """
-        pdb.set_trace()
+        vl = set([])
+        vr = set([])
+        for v in self._nodes:
+            if (sid, l) in self._node_labels.values():
+                pass
+        # pdb.set_trace()
 
     ### Static, Public Methods
     @staticmethod
@@ -224,8 +234,8 @@ class InputDataGraph:
                             newG.add_node(vi + vj)
                             newG.add_node(vk + vl)
                             # add node label
-                            new_label = set((G1._node_labels[vi], G2._node_labels[vj]))
-                            newG.I(vi + vj, [new_label])
+                            new_labels = G1._node_labels[vi] + G2._node_labels[vj]
+                            newG.I(vi + vj, new_labels)
                             # add edges
                             newG.add_edge((vi + vj, vk + vl))
                             newG.L((vi + vj, vk + vl), [tok])
