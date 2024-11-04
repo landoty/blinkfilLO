@@ -50,5 +50,5 @@ class SynthDriver:
     def GenDag(self, inp_data: list, output: str, IDG: 'IDG') -> DAG:
         """ Generate a DAG from a row of input/output example and IDG """
         dag = DAG(len(inp_data))
-        dag.learn(inp_data, output)
+        dag.learn(inp_data, output, IDG)
         return dag
