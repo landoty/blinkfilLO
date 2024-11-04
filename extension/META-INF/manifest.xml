@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="http://openoffice.org/manifest">
+    <manifest:component>
+        <manifest:version>1.0</manifest:version>
+        <manifest:name>Libreoffice Extension</manifest:name>
+        <manifest:description>This extension does XYZ.</manifest:description>
+        <!-- <manifest:homepage>http://your-homepage.com</manifest:homepage> -->
+        <manifest:license>MIT</manifest:license>
+        <manifest:dependencies>
+            <manifest:dependency>org.openoffice.extension</manifest:dependency>
+        </manifest:dependencies>
+    </manifest:component>
+</manifest:manifest>
