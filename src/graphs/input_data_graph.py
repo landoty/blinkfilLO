@@ -29,7 +29,6 @@ class InputDataGraph:
 
         # member variable for generation
         self._id = _id
-        self._mId = {}
 
     ### Private Methods
     def __repr__(self):
@@ -105,9 +104,6 @@ class InputDataGraph:
             if v2 not in self._edge_labels[v1]:
                 self._edge_labels[v1][v2] = []
 
-            if tok_match[0] == 'Alphanumeric':
-                # pdb.set_trace()
-                pass
             self._edge_labels[v1][v2].append(tok_match)
 
     ### Public Methods
@@ -147,6 +143,16 @@ class InputDataGraph:
         """ Label an edge """
         for l in labels:
             self._label_edge(edge, l)
+
+    def GenSubStrExpr(self, vk, l, r, sid):
+        """ Generate all substring expressions for the given string
+
+        vk: string to generate SubStrExpr's for
+        l: left position
+        r: right position
+        sid: unique string index
+        """
+        pdb.set_trace()
 
     ### Static, Public Methods
     @staticmethod
@@ -248,4 +254,3 @@ class InputDataGraph:
                 newG.add_edge((v1, v2))
                 newG.L((v1, v2), G2._edge_labels[v1][v2])
         '''
-        #pdb.set_trace()

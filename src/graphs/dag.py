@@ -4,13 +4,17 @@
 from .input_data_graph import InputDataGraph
 import language.expressions as EXPRS
 
+import pdb
+
 class DAG:
-    def __init__(self, num_nodes: int):
+    def __init__(self, num_nodes: int, string2Id):
         self._nodes = set(i for i in range(num_nodes+1))
         self._start_node = 0
         self._final_node = num_nodes
         self._edges = {}
         self._mapping = {} # mapping edges to substring expresssions
+
+        self.string2Id = string2Id # function poiinter to string map
 
     def __repr__(self):
         """ A better repr for a DAG """
@@ -31,3 +35,6 @@ class DAG:
                     self._mapping[i] = {}
 
                 self._mapping[i][j] = EXPRS.ConstStringExpr(output[i:j])
+
+                for vk in input_data:
+                    IDG.GenSubStrExpr(vk, i, j, self.string2Id(vk))
