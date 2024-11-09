@@ -53,17 +53,16 @@ class InputDataGraph:
             print("Label must be of form (id, i)")
             return False
 
-        elif node not in self._nodes:
+        if node not in self._nodes:
             print(f"Node {node} not in InputDataGraph")
             return False
 
-        else:
-            if node not in self._node_labels:
-                self._node_labels[node] = []
+        if node not in self._node_labels:
+            self._node_labels[node] = set([])
 
-            _id, i = label
-            self._node_labels[node].append((_id, i))
-            return True
+        _id, i = label
+        self._node_labels[node].add((_id, i))
+        return True
 
     def _label_edge(self, edge: tuple, tok_match: tuple) -> bool:
         """ Label a single edge
@@ -88,11 +87,11 @@ class InputDataGraph:
             print("Edges must be a pair")
             return False
 
-        elif len(tok_match) != 2:
+        if len(tok_match) != 2:
             print("Token matches must be of form (t, k)")
             return False
 
-        elif not tok_match[1]:
+        if not tok_match[1]:
             return False
 
         v1, v2 = edge
@@ -100,21 +99,43 @@ class InputDataGraph:
             print(f"Edge: {edge} not in InputDataGraph")
             return False
 
-        else:
-            self.add_edge(edge)
-            if v1 not in self._edge_labels:
-                self._edge_labels[v1] = {}
+        self.add_edge(edge)
+        if v1 not in self._edge_labels:
+            self._edge_labels[v1] = {}
 
-            if v2 not in self._edge_labels[v1]:
-                self._edge_labels[v1][v2] = []
+        if v2 not in self._edge_labels[v1]:
+            self._edge_labels[v1][v2] = []
 
-            self._edge_labels[v1][v2].append(tok_match)
-            return True
+        self._edge_labels[v1][v2].append(tok_match)
+        return True
 
-    ### Public Methods
-    def get_id(self) -> int:
+    ### Public Properties
+    @property
+    def nodes(self):
+        """ Nodes property """
+        return self._nodes
+
+    @property
+    def node_labels(self):
+        """ Node label property """
+        return self._node_labels
+
+    @property
+    def edges(self):
+        """ Edge property """
+        return self._edges
+
+    @property
+    def edge_labels(self):
+        """ Edge label property """
+        return self._edge_labels
+
+    @property
+    def id(self):
+        """ ID property """
         return self._id
 
+    ### Public Methods
     def add_node(self, node: int):
         """ Add a node to the graph """
         if node in self._nodes:
@@ -139,48 +160,33 @@ class InputDataGraph:
         elif v2 not in self._edges[v1]:
             self._edges[v1].add(v2)
 
-    def I(self, node: int, labels: list[tuple]):
+    def label_nodes(self, node: int, labels: list[tuple]):
         """ Label a node """
         for l in labels:
             self._label_node(node, l)
 
-    def L(self, edge: tuple, labels: list[tuple]):
+    def label_edges(self, edge: tuple, labels: list[tuple]):
         """ Label an edge """
         for l in labels:
             self._label_edge(edge, l)
 
-    def GenSubStrExpr(self, vk, l, r, sid):
-        """ Generate all substring expressions for the given string
-
-        vk: string to generate SubStrExpr's for
-        l: left position
-        r: right position
-        sid: unique string index
-        """
-        vl = set([])
-        vr = set([])
-        for v in self._nodes:
-            if (sid, l) in self._node_labels.values():
-                pass
-        # pdb.set_trace()
-
     ### Static, Public Methods
     @staticmethod
-    def GenGraphStr(s: str, _id: int = -1):
+    def gen_graph_str(s: str, _id: int = -1):
         """ Generate a single IDG given an input string """
         # Init graph and get new unique string ID
-        G = InputDataGraph(_id)
+        graph = InputDataGraph(_id)
         # label all the nodes
         for i in range(0, len(s) + 3):
-            G.add_node((i,))
-            G.I((i,), [(_id, i)])
+            graph.add_node((i,))
+            graph.label_nodes((i,), [(_id, i)])
 
         # label the start and end symbols
-        G.L(
+        graph.label_edges(
             ((0,),(1,)),
             [(BaseTokens.StartT.name, 1)]
         )
-        G.L(
+        graph.label_edges(
             ((len(s)+1,), (len(s)+2,)),
             [(BaseTokens.EndT.name, 1)]
         )
@@ -193,8 +199,8 @@ class InputDataGraph:
             n = len(matches)
             for i, span in enumerate(matches):
                 start, end = span.start() + 1, span.end() + 1
-                G.add_edge(((start,), (end,)))
-                G.L(
+                graph.add_edge(((start,), (end,)))
+                graph.label_edges(
                     ((start,), (end,)),
                     [((tok.name), (i+1, i-n))]
                 )
@@ -202,9 +208,9 @@ class InputDataGraph:
         # Add string literal matches
         for i in range(1, len(s) + 1):
             for j in range(i+1, len(s) + 2):
-                idxL, idxR = i-1, j-1
-                substr = s[idxL:idxR]
-                G.add_edge(((i,), (j,)))
+                idx_l, idx_r = i-1, j-1
+                substr = s[idx_l:idx_r]
+                graph.add_edge(((i,), (j,)))
 
                 tok = re.compile(substr)
                 matches = tuple(tok.finditer(s))
@@ -212,34 +218,37 @@ class InputDataGraph:
                 for k, span in enumerate(matches):
                     start, end = span.start()+1, span.end()+1
                     if start == i and end == j:
-                        G.L(
+                        graph.label_edges(
                             ((start,), (end,)),
                             [((substr), (k+1, k-n))]
                         )
-        return G
+        return graph
 
     @staticmethod
-    def intersect(G1, G2):
+    def intersect(graph_1, graph_2):
         """ Intersect two IDGs """
-        newG = InputDataGraph()
+        new_graph = InputDataGraph()
 
         # O(n^4) in worst case be avearges to O(n^2) in practice
-        for vi in G1._edges:
-            for vj in G2._edges:
-                for vk in G1._edges[vi]:
-                    for vl in G2._edges[vj]:
+        for vi in graph_1.edges:
+            for vj in graph_2.edges:
+                for vk in graph_1.edges[vi]:
+                    for vl in graph_2.edges[vj]:
                         # all tokens that the graphs share on the new edge
-                        for tok in set(G1._edge_labels[vi][vk]) & set(G2._edge_labels[vj][vl]):
+                        for tok in set(graph_1.edge_labels[vi][vk]) & set(graph_2.edge_labels[vj][vl]):
                             # add nodes
-                            newG.add_node(vi + vj)
-                            newG.add_node(vk + vl)
+                            new_graph.add_node(vi + vj)
+                            new_graph.add_node(vk + vl)
                             # add node label
-                            new_labels = G1._node_labels[vi] + G2._node_labels[vj]
-                            newG.I(vi + vj, new_labels)
+                            new_labels1 = graph_1.node_labels[vi] | graph_2.node_labels[vj]
+                            new_graph.label_nodes(vi + vj, new_labels1)
+
+                            new_labels2 = graph_1.node_labels[vk] | graph_2.node_labels[vl]
+                            new_graph.label_nodes(vk + vl, new_labels2)
                             # add edges
-                            newG.add_edge((vi + vj, vk + vl))
-                            newG.L((vi + vj, vk + vl), [tok])
-        return newG
+                            new_graph.add_edge((vi + vj, vk + vl))
+                            new_graph.label_edges((vi + vj, vk + vl), [tok])
+        return new_graph
 
 
     @staticmethod

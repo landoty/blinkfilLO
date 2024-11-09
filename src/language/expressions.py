@@ -41,8 +41,8 @@ class SubStringExpr(Expr):
     def __init__(
         self,
         substr: str,
-        left: 'PosExpr',
-        right: 'PosExpr'
+        left: set['PosExpr'],
+        right: set['PosExpr']
     ):
         self.v = substr
         self.pl = left

@@ -24,7 +24,6 @@ if __name__ == "__main__":
     ]
 
     synth = SynthDriver()
-    IDG = synth.GenInpDataGraph(input_data)
-    print(IDG)
-    DAG = synth.GenDag(input_data[0], output_data[0], IDG)
+    IDG = synth.gen_input_data_graph(input_data)
+    DAG = synth.gen_dag(input_data, output_data, IDG)
     print(DAG)

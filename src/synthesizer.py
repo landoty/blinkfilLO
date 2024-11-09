@@ -1,6 +1,5 @@
 """ Main driver class Synthesizer for BlinkFilLO """
 # src/synthesizer.py
-
 from graphs.input_data_graph import InputDataGraph as IDG
 from graphs.dag import DAG
 from language.base_tokens import BaseTokens
@@ -13,42 +12,49 @@ class SynthDriver:
     """
     def __init__(self):
         # string to unique id mechanism
-        self._sId = {}
+        self._s_id = {}
         self._counter = 0
 
-    def string2Id(self, s: str) -> int:
-        if s not in self._sId:
-            self._sId[s] = self._counter
+    def string_to_id(self, s: str) -> int:
+        """ Retrieve a unique ID for the string """
+        if s not in self._s_id:
+            self._s_id[s] = self._counter
             _id = self._counter
             self._counter += 1
             return _id
-        else:
-            return self._sId[s]
+        return self._s_id[s]
 
-    def _GenGraphColumn(self, data: list) -> IDG:
+    def _gen_graph_column(self, data: list) -> IDG:
         """ Generate the input data graph for a spreadsheet column """
-        G = IDG.GenGraphStr(data[0], self.string2Id(data[0]))
+        graph = IDG.gen_graph_str(data[0], self.string_to_id(data[0]))
         for i in range(1, len(data)):
-            G = IDG.intersect(
-                G,
-                IDG.GenGraphStr(
+            graph = IDG.intersect(
+                graph,
+                IDG.gen_graph_str(
                     data[i],
-                    self.string2Id(data[i])
+                    self.string_to_id(data[i])
                 )
             )
-        return G
+        return graph
 
-    def GenInpDataGraph(self, data: list[list]) -> IDG:
+    def gen_input_data_graph(self, data: list[list]) -> IDG:
         """ Generate the input data graph for the spreadsheet """
-        # TODO do GenGraphColumn and intersect
         column_graphs = []
         for i in range(len(data)):
-            column_graphs.append(self._GenGraphColumn(data[i]))
+            column_graphs.append(self._gen_graph_column(data[i]))
 
-        return(IDG.union(column_graphs))
+        return IDG.union(column_graphs)
 
-    def GenDag(self, inp_data: list, output: str, IDG: 'IDG') -> DAG:
+    def gen_dag(self, inp_data: list, output_data: list, idg: IDG) -> DAG:
         """ Generate a DAG from a row of input/output example and IDG """
-        dag = DAG(len(inp_data), self.string2Id)
-        dag.learn(inp_data, output, IDG)
+        examples = list(zip(inp_data[0], output_data))
+        dag = DAG(len(examples[0][1]), self.string_to_id)
+        inp, out = examples[0]
+        dag.learn([inp], out, idg)
+
+        for i in range(1, len(examples)):
+            dag_p = DAG(len(examples[i][1]), self.string_to_id)
+            inp, out = examples[i]
+            dag_p.learn([inp], out, idg)
+            # intersect
         return dag
