@@ -1,14 +1,12 @@
 """ Definitions for the InputDataGraph """
 # graphs/input_data_graph.py
 
-from typing import Union
 import re
-
-import pdb
 
 from language.base_tokens import BaseTokens
 
 class InputDataGraph:
+    """ Graph structure representing common substructures in input data """
     def __init__(self, _id: int = -1):
         """ Build an empty IDG
 
