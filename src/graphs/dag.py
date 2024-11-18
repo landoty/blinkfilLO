@@ -1,6 +1,6 @@
 """ Definition for the DAG used in synthesis """
 # graphs/dag.py
-
+import pdb
 from .input_data_graph import InputDataGraph
 import language.expressions as EXPRS
 
@@ -19,23 +19,17 @@ class DAG:
         """ A better repr for a DAG """
         return str(f"{self._nodes}\n\n{self._edges}\n\n{self._mapping}")
 
-    @staticmethod
-    def gen_sub_str_expr(vk, l, r, sid, idg: InputDataGraph):
-        """ Generate all substring expressions for the given string
+    @property
+    def edges(self) -> dict:
+        """ get the edges of the DAG """
+        return self._edges
 
-        vk: string to generate SubStrExpr's for
-        l: left position
-        r: right position
-        sid: unique string index
-        """
-        vl = set([])
-        vr = set([])
-        for v in idg.nodes:
-            if (sid, l) in idg.node_labels[v]:
-                vl.add(v)
-            if (sid, r) in idg.node_labels[v]:
-                vr.add(v)
+    @property
+    def mapping(self) -> dict:
+        """ get the learned mapping for the DAG """
+        return self._mapping
 
+    # Public Methdods
     def learn(self, input_data: list, output: str, idg: InputDataGraph):
         """ Learn the mapping function on input/output example """
         for i in range(len(output)):
@@ -51,8 +45,15 @@ class DAG:
                     self._mapping[i] = {}
 
                 os = output[i:j]
-                self._mapping[i][j] = EXPRS.ConstStringExpr(os)
+                self._mapping[i][j] = set([EXPRS.ConstStringExpr(os)])
                 for vk in input_data:
                     l = vk.index(os) + 1
                     r = l + len(os)
-                    DAG.gen_sub_str_expr(vk, l, r, self.string_to_id(vk), idg)
+                    substr = EXPRS.gen_sub_str_expr(
+                                        vk,
+                                        l,
+                                        r,
+                                        self.string_to_id(vk),
+                                        idg
+                                )
+                    self._mapping[i][j].add(substr)
