@@ -31,7 +31,7 @@ class InputDataGraph:
     ### Private Methods
     def __repr__(self):
         """ A better repr when printing a graph """
-        return str(f"{self._edge_labels}\n\n{self._edges}\n\n{self._node_labels}\n\n{self._nodes}")
+        return f"IDG:\n\t{self._edge_labels}"
 
     def _label_node(self, node: int, label: tuple) -> bool:
         """ Label a single node
