@@ -49,7 +49,7 @@ class SubStringExpr(Expr):
         self.pr = right
 
     def __repr__(self) -> str:
-        return f"SubStr({self.v}, {self.pl.__repr__}, {self.pr.__repr__}"
+        return f"SubStr(\"{self.v}\", {self.pl.__repr__()}, {self.pr.__repr__()}"
 
 class PosExpr(Expr):
     """ Position Expression w/ Token """
@@ -63,7 +63,7 @@ class PosExpr(Expr):
         self.direction = direction
 
     def __repr__(self) -> str:
-        return f"({self.tok},{self.idx},{self.direction.value}"
+        return f"PosExpr(\"{self.tok}\",{self.idx},{self.direction.value})"
 
 class ConstPosExpr(Expr):
     """ Constant Position Expression """
@@ -78,3 +78,56 @@ class ConstPosExpr(Expr):
 class Direction(Enum):
     Start = "Start"
     End = "End"
+
+def gen_sub_str_expr(vk, l, r, sid, idg: 'InputDataGraph'):
+    """ Generate all substring expressions for the given string
+
+    vk: string to generate SubStrExpr's for
+    l: left position
+    r: right position
+    sid: unique string index
+    """
+    def _to_exprs(node: tuple) -> set[PosExpr]:
+        """ Convert a node in the idg to expressions in the language """
+        start_edges = []
+        end_edges = []
+
+        # node is is left/start
+        if node in idg.edge_labels:
+            for r_edge in idg.edge_labels[node]:
+                for label in idg.edge_labels[node][r_edge]:
+                    pos = PosExpr(
+                                tok=label[0],
+                                idx=label[1],
+                                direction=Direction.Start
+                            )
+                    start_edges.append(pos)
+
+        # node is right/end
+        for l_edge in idg.edge_labels:
+            if node in idg.edge_labels[l_edge]:
+                for label in idg.edge_labels[l_edge][node]:
+                    pos = PosExpr(
+                                tok=label[0],
+                                idx=label[1],
+                                direction=Direction.End
+                            )
+                    end_edges.append(pos)
+        return set(start_edges + end_edges)
+
+    vl = set([])
+    vr = set([])
+    for v in idg.nodes:
+        if (sid, l) in idg.node_labels[v]:
+            vl |= _to_exprs(v)
+        if (sid, r) in idg.node_labels[v]:
+            vr |= _to_exprs(v)
+
+    vl.add(ConstPosExpr(idx=l))
+    vr.add(ConstPosExpr(idx=r))
+
+    return SubStringExpr(
+                substr=vk,
+                left=vl,
+                right=vr
+            )
