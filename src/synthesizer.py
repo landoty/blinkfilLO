@@ -48,13 +48,20 @@ class SynthDriver:
     def gen_dag(self, inp_data: list, output_data: list, idg: IDG) -> DAG:
         """ Generate a DAG from a row of input/output example and IDG """
         examples = list(zip(inp_data[0], output_data))
-        dag = DAG(len(examples[0][1]), self.string_to_id)
+        dag = DAG(
+                num_nodes=len(examples[0][1]),
+                string_to_id=self.string_to_id
+            )
         inp, out = examples[0]
         dag.learn([inp], out, idg)
 
         for i in range(1, len(examples)):
-            dag_p = DAG(len(examples[i][1]), self.string_to_id)
+            dag_p = DAG(
+                        num_nodes=len(examples[i][1]),
+                        string_to_id=self.string_to_id
+                    )
             inp, out = examples[i]
             dag_p.learn([inp], out, idg)
             # intersect
+            dag = DAG.intersect(dag_p, dag)
         return dag
