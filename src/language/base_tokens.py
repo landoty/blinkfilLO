@@ -1,6 +1,5 @@
 """ Contains base token regexes """
 # language/base_tokens.py
-
 from enum import Enum
 import re
 
@@ -84,4 +83,9 @@ class BaseTokens(Enum):
                     (Alphabets.pattern, Whitespace.pattern, Alphabets.pattern),
                     re.VERBOSE
                 )
-
+    @staticmethod
+    def no_verbose(pat):
+        small_pat = ""
+        for sub in pat.split("\n"):
+            small_pat += sub.split("#",1)[0].replace(" ", "")
+        return small_pat

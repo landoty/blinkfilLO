@@ -2,6 +2,7 @@
 # src/synthesizer.py
 from graphs.input_data_graph import InputDataGraph as IDG
 from graphs.dag import DAG
+from language.expressions import StringExpr
 from language.base_tokens import BaseTokens
 
 class SynthDriver:
@@ -65,3 +66,19 @@ class SynthDriver:
             # intersect
             dag = DAG.intersect(dag_p, dag)
         return dag
+
+    def extract_formula(self, dag: DAG) -> list[str]:
+        """ Given a DAG of expressions, extract LibreOffice Formulaes """
+        start = dag.start_node
+        final = dag.final_node
+        path = []
+
+        # do Djikstra's here to get a path
+        if final in dag.mapping[start]:
+            # here, pick best node according to heuristic
+            for expr in dag.mapping[start][final]:
+                path.append(expr)
+
+        # Then create a StringExpr and convert to formula
+        expr = StringExpr(path)
+        return(expr.to_formula())

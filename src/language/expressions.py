@@ -3,6 +3,7 @@
 
 from typing import Union
 from enum import Enum
+from .base_tokens import BaseTokens
 
 class Expr:
     def __repr__(self) -> str:
@@ -21,9 +22,39 @@ class StringExpr(Expr):
         """ add a new substring expression to the expression """
         self.substr_exprs.append(substr_expr)
 
+    def to_formula(self) -> str:
+        """ Convert to a LibreOffice formula """
+        formula = "CONCAT("
+        for expr in self.substr_exprs:
+            if isinstance(expr, SubStringExpr):
+                substr = "MID(<input>,"
+                best = []
+                # check all left
+                for l in expr.pl:
+                    if len(l) > len(best):
+                        best = l
+
+                left_index = best.to_formula()
+                substr += f"{left_index},"
+
+                # check all right
+                best = []
+                for r in expr.pr:
+                    if len(r) > len(best):
+                        best = r
+
+                right_index = best.to_formula()
+                substr += f"{right_index}-{left_index}"
+                formula += f"{substr})"
+
+            elif isinstance(expr, ConstStringExpr):
+                formula += expr.to_formula()
+
+        return formula
+
     def __repr__(self) -> str:
         """ Output a BlinkFill-formatted formula """
-        return f"{' '.join(se.__repr__ for se in self.substr_exprs)}"
+        return f"{' '.join(se.__repr__() for se in self.substr_exprs)}"
 
 class ConstStringExpr(Expr):
     """ Constant string sub expression """
@@ -42,8 +73,11 @@ class ConstStringExpr(Expr):
     def __repr__(self) -> str:
         return f"ConstStr({self.const_str})"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return hash(self) == hash(other)
+
+    def to_formula(self) -> str:
+        return f"\"{self.const_str}\""
 
 class SubStringExpr(Expr):
     """ Substring Expression """
@@ -112,6 +146,31 @@ class PosExpr(Expr):
                     self.direction == other.direction
         return False
 
+    def __len__(self) -> int:
+        return len(self.tok)
+
+    def to_formula(self) -> str:
+        formula = "SEARCH("
+        # build regex
+        regex = "REGEX(<input>,"
+        if hasattr(BaseTokens, self.tok):
+            regex += f"\"{BaseTokens.no_verbose(getattr(BaseTokens,self.tok).value.pattern)}\""
+        else:
+            regex += f"\"{self.tok}\""
+
+        regex += ",,"
+        regex += f"{self.idx[0]})"
+        # build the rest of the search
+        formula += regex
+        formula += ",<input>,1)"
+
+        # get the end index
+        if self.direction == Direction.End:
+            formula += f"+LEN({regex})"
+
+        return formula
+
+
 class ConstPosExpr(Expr):
     """ Constant Position Expression """
     def __init__(self,
@@ -132,6 +191,9 @@ class ConstPosExpr(Expr):
         if isinstance(other, ConstPosExpr):
             return self.idx == other.idx
         return False
+
+    def __len__(self):
+        return 1
 
 class Direction(Enum):
     Start = "Start"
