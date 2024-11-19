@@ -25,6 +25,6 @@ if __name__ == "__main__":
 
     synth = SynthDriver()
     IDG = synth.gen_input_data_graph(input_data)
-    print(IDG)
     DAG = synth.gen_dag(input_data, output_data, IDG)
-    print(DAG)
+    formulas = synth.extract_formula(DAG)
+    print(formulas.replace("<input>", "A1"))

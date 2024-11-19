@@ -1,6 +1,5 @@
 """ Definition for the DAG used in synthesis """
 # graphs/dag.py
-import pdb
 from .input_data_graph import InputDataGraph
 import language.expressions as EXPRS
 

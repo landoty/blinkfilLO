@@ -1,6 +1,5 @@
 """ Definitions for the InputDataGraph """
 # graphs/input_data_graph.py
-
 import re
 
 from language.base_tokens import BaseTokens
