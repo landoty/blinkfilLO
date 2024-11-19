@@ -31,12 +31,16 @@ def load_data(file: str) -> dict:
         raise FileNotFoundError(f"Could not find: {file}")
 
     with open(file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        if "input" not in data:
-            raise RuntimeError("data must have an \'input\' object")
-        if "output" not in data:
-            raise RuntimeError("data must have an \'output\' object")
+        raw_data = json.load(f)
 
+        data = {"input": [], "output": []}
+        examples = raw_data["Examples"]
+        for ex in examples:
+            data["input"] += ex["Input"]
+            data["output"].append(ex["Output"])
+
+        # the idg generation process expects a 2d-list
+        data["input"] = [data["input"]]
         return data
 
 if __name__ == "__main__":
