@@ -1,0 +1,18 @@
+{
+	"input": [[
+			"Mumbai, India",
+			"Los Angeles, USA",
+			"Newark, USA",
+			"New York, USA",
+			"Wellington, New Zealand"
+		]
+		]
+	,
+	"output": [
+			"India",
+			"USA",
+			"USA",
+			"USA",
+			"New Zealand"
+		]
+}
