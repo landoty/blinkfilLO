@@ -1,6 +1,6 @@
 """ Main driver for BlinkfilLO """
 # main.py
-
+import pdb
 import os
 import sys
 import argparse
@@ -25,23 +25,27 @@ output_data = [
     "New Zeland"
 ]
 
-def load_data(file: str) -> dict:
-    """ Load I/O examples from file """
-    if not os.path.exists(file):
-        raise FileNotFoundError(f"Could not find: {file}")
+def load_data(data: str) -> dict:
+    """ Load I/O examples from file or command line """
+    if os.path.exists(data):
+        with open(data, "r", encoding="utf-8") as f:
+            raw_data = json.load(f)
+    else:
+        try:
+            raw_data = json.loads(data)
+        except:
+            raise RuntimeError("Input data is not JSON-formatted. Accepts either file or stdin")
 
-    with open(file, "r", encoding="utf-8") as f:
-        raw_data = json.load(f)
 
-        data = {"input": [], "output": []}
-        examples = raw_data["Examples"]
-        for ex in examples:
-            data["input"] += ex["Input"]
-            data["output"].append(ex["Output"])
+    data = {"input": [], "output": []}
+    examples = raw_data["Examples"]
+    for ex in examples:
+        data["input"] += ex["Input"]
+        data["output"].append(ex["Output"])
 
-        # the idg generation process expects a 2d-list
-        data["input"] = [data["input"]]
-        return data
+    # the idg generation process expects a 2d-list
+    data["input"] = [data["input"]]
+    return data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -79,8 +83,13 @@ if __name__ == "__main__":
     else:
         print("Running hard-coded example")
 
-    synth = SynthDriver()
-    IDG = synth.gen_input_data_graph(input_data)
-    DAG = synth.gen_dag(input_data, output_data, IDG)
-    formulas = synth.extract_formula(DAG)
-    print(formulas.replace("<input>", args.input_cell))
+    try:
+        synth = SynthDriver()
+        IDG = synth.gen_input_data_graph(input_data)
+        DAG = synth.gen_dag(input_data, output_data, IDG)
+        formulas = synth.extract_formula(DAG)
+        print(formulas.replace("<input>", args.input_cell))
+    except Exception as e:
+        print(f"error: {e}")
+        print("failed")
+        sys.exit(1)
