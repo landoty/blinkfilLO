@@ -44,12 +44,19 @@ class StringExpr(Expr):
                         best = r
 
                 right_index = best.to_formula()
-                substr += f"{right_index}-{left_index}"
+
+                # print(left_index)
+                # print(right_index)
+                substr += f"{right_index}-({left_index})"
                 formula += f"{substr})"
+                formula += ","
 
             elif isinstance(expr, ConstStringExpr):
                 formula += expr.to_formula()
+                formula += ","
 
+        formula = formula[0:-1]
+        formula += ")"
         return formula
 
     def __repr__(self) -> str:
@@ -76,6 +83,9 @@ class ConstStringExpr(Expr):
     def __eq__(self, other) -> bool:
         return hash(self) == hash(other)
 
+    def __len__(self) -> int:
+        return len(self.const_str)
+
     def to_formula(self) -> str:
         return f"\"{self.const_str}\""
 
@@ -92,15 +102,18 @@ class SubStringExpr(Expr):
         self.pr = right
 
     def __repr__(self) -> str:
-        return f"SubStr(\"{self.v}\", {self.pl.__repr__()}, {self.pr.__repr__()}"
+        return f"SubStr({self.pl.__repr__()}, {self.pr.__repr__()}"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return id(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if isinstance(other, SubStringExpr):
             return self.pl == other.pl and self.pr == other.pr
         return False
+
+    def __len__(self) -> int:
+        return len(self.v)
 
     @staticmethod
     def interesct(substr1, substr2) -> 'SubStringExpr':
@@ -113,8 +126,9 @@ class SubStringExpr(Expr):
         if len(right) == 0:
             return None
 
+        max_substr = substr1.v if len(substr1.v) > len(substr2.v) else substr2.v
         return SubStringExpr(
-                    substr = f"{substr1.v} + {substr2.v}",
+                    substr = max_substr,
                     left=left,
                     right=right
                 )
@@ -131,7 +145,7 @@ class PosExpr(Expr):
         self.direction = direction
 
     def __repr__(self) -> str:
-        return f"PosExpr(\"{self.tok}\",{self.idx},{self.direction.value})"
+        return f"PosExpr('{self.tok}',{self.idx},{self.direction.value})"
 
     def __key(self):
         return (self.tok,self.idx,self.direction.value)
@@ -150,6 +164,12 @@ class PosExpr(Expr):
         return len(self.tok)
 
     def to_formula(self) -> str:
+        # special case if token is the start or end token
+        if self.tok == BaseTokens.StartT.name:
+            return "0+1"
+        elif self.tok == BaseTokens.EndT.name:
+            return "LEN(<input>)"
+
         formula = "SEARCH("
         # build regex
         regex = "REGEX(<input>,"
@@ -159,7 +179,10 @@ class PosExpr(Expr):
             regex += f"\"{self.tok}\""
 
         regex += ",,"
-        regex += f"{self.idx[0]})"
+        if isinstance(self.idx, int):
+            regex += f"{self.idx})"
+        else:
+            regex += f"{self.idx[0]})"
         # build the rest of the search
         formula += regex
         formula += ",<input>,1)"
@@ -194,6 +217,9 @@ class ConstPosExpr(Expr):
 
     def __len__(self):
         return 1
+
+    def to_formula(self) -> str:
+        return str(self.idx)
 
 class Direction(Enum):
     Start = "Start"
