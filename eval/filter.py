@@ -15,7 +15,7 @@ for benchmark in os.listdir("."):
         config = json.load(f)
         for ft in config["Features"]:
             if ft.lower() != "concatenation" and \
-                ft.lower() != "multicol" and \
+                ft.lower() != "multicolumn" and \
                 ft.lower() != "substring":
                 remove = True
                 break
