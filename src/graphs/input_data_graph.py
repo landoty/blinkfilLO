@@ -167,6 +167,17 @@ class InputDataGraph:
         for l in labels:
             self._label_edge(edge, l)
 
+    def to_dot(self, path: str) -> bool:
+        """ generate a dot (graphviz) graph for the IDG """
+        with open(path, "w", encoding='utf-8') as f:
+            f.write("digraph idg {\n")
+            for n1 in self._edge_labels:
+                for n2 in self._edge_labels[n1]:
+                    f.write(f"\"{n1}\" -> \"{n2}\" [label = \"{self._edge_labels[n1][n2]}\"];\n")
+            f.write("}")
+
+        return True
+
     ### Static, Public Methods
     @staticmethod
     def gen_graph_str(s: str, _id: int = -1):
@@ -209,7 +220,11 @@ class InputDataGraph:
                 substr = s[idx_l:idx_r]
                 graph.add_edge(((i,), (j,)))
 
-                tok = re.compile(substr)
+                # print(substr)
+                # for the pattern, escape any regex special characters
+                pat = substr.replace("(","\\(").replace(")", "\\)")
+                pat = pat.replace("[","\\[").replace("]", "\\]")
+                tok = re.compile(pat)
                 matches = tuple(tok.finditer(s))
                 n = len(matches)
                 for k, span in enumerate(matches):
@@ -225,12 +240,11 @@ class InputDataGraph:
     def intersect(graph_1, graph_2):
         """ Intersect two IDGs """
         new_graph = InputDataGraph()
-
         # O(n^4) in worst case be avearges to O(n^2) in practice
-        for vi in graph_1.edges:
-            for vj in graph_2.edges:
-                for vk in graph_1.edges[vi]:
-                    for vl in graph_2.edges[vj]:
+        for vi in graph_1.edge_labels:
+            for vj in graph_2.edge_labels:
+                for vk in graph_1.edge_labels[vi]:
+                    for vl in graph_2.edge_labels[vj]:
                         # all tokens that the graphs share on the new edge
                         for tok in set(graph_1.edge_labels[vi][vk]) & set(graph_2.edge_labels[vj][vl]):
                             # add nodes
