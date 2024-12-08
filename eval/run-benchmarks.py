@@ -82,7 +82,7 @@ if __name__ == "__main__":
             # each benchmark should be a directory
             # with spec.json and meta.json
             # https://github.com/microsoft/prose-benchmarks
-            if not os.path.isdir(bench):
+            if not os.path.isdir(os.path.join(args.bench, bench)):
                 continue
 
             if "spec.json" in os.listdir(os.path.join(args.bench, bench)):
