@@ -108,6 +108,6 @@ if __name__ == "__main__":
         print(f"[+] Failed Benchmarks: {len(failed)}")
         print(f"[+] Timed Out Benchmarks: {len(timeout)}")
         print(f"[+] Saving results to: {args.csv}")
-
+        df.to_csv(args.csv)
     else:
         print("Provide a directory with the benchmarks")
