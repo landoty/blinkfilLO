@@ -218,17 +218,15 @@ class InputDataGraph:
             for j in range(i+1, len(s) + 2):
                 idx_l, idx_r = i-1, j-1
                 substr = s[idx_l:idx_r]
+                span = len(substr)
                 graph.add_edge(((i,), (j,)))
 
-                # print(substr)
-                # for the pattern, escape any regex special characters
-                pat = substr.replace("(","\\(").replace(")", "\\)")
-                pat = pat.replace("[","\\[").replace("]", "\\]")
-                tok = re.compile(pat)
-                matches = tuple(tok.finditer(s))
+                matches = [i for i in range(len(s)) if s.startswith(substr, i)]
                 n = len(matches)
-                for k, span in enumerate(matches):
-                    start, end = span.start()+1, span.end()+1
+                for k, match in enumerate(matches):
+                    # start , end = span.start()+1, span.end()+1
+                    start = match
+                    end = match + span
                     if start == i and end == j:
                         graph.label_edges(
                             ((start,), (end,)),
