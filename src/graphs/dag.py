@@ -1,9 +1,7 @@
 """ Definition for the DAG used in synthesis """
 # graphs/dag.py
-import pdb
 from .input_data_graph import InputDataGraph
 import language.expressions as EXPRS
-import time
 
 class DAG:
     """ Directed Acyclic Graph to compactly store expressions in the language """
@@ -75,22 +73,23 @@ class DAG:
         for i in range(len(output)):
             for j in range(i+1, len(output)+1):
                 # init edges
-                if i in self._edges:
-                    self._edges[i].add(j)
+                if i+1 in self._edges:
+                    self._edges[i+1].add(j+1)
                 else:
-                    self._edges[i] = set([j])
+                    self._edges[i+1] = set([j+1])
 
                 # learn
-                if i not in self._mapping:
-                    self._mapping[i] = {}
+                if i+1 not in self._mapping:
+                    self._mapping[i+1] = {}
 
                 os = output[i:j]
-                self._mapping[i][j] = set([EXPRS.ConstStringExpr(os)])
+                self._mapping[i+1][j+1] = set([EXPRS.ConstStringExpr(os)])
                 for vk in input_data:
                     if os not in vk:
                         continue
                     l = vk.index(os) + 1
                     r = l + len(os)
+
                     substr = EXPRS.gen_sub_str_expr(
                                         vk[l-1:],
                                         l,
@@ -98,7 +97,7 @@ class DAG:
                                         self.string_to_id(vk),
                                         idg
                                 )
-                    self._mapping[i][j].add(substr)
+                    self._mapping[i+1][j+1].add(substr)
 
     def rank(self):
         """ Rank nodes in the DAG """
@@ -138,10 +137,9 @@ class DAG:
             n1_src, n2_src = node_src
             edges_1 = dag_1.mapping[n1_src]
             edges_2 = dag_2.mapping[n2_src]
-            # cartesian product of all nodes on the source node edge 
-            new_nodes_dst = [(i,j) for i in edges_1 for j in edges_2]
 
-            new_nodes_dst[-1]
+            # cartesian product of all nodes on the source node edge
+            new_nodes_dst = [(i,j) for i in edges_1 for j in edges_2]
             for node_dst in new_nodes_dst:
                 n1_dst, n2_dst = node_dst
 
@@ -160,9 +158,8 @@ class DAG:
                                 intersection.append(s1)
 
                         # intersect defined by substringexpr
-                        elif isinstance(s1, EXPRS.SubStringExpr) and \
-                        isinstance(s2, EXPRS.SubStringExpr):
-                            sub_int = EXPRS.SubStringExpr.interesct(s1,s2)
+                        else:
+                            sub_int = EXPRS.SubStringExpr.intersect(s1,s2)
                             if sub_int:
                                 intersection.append(sub_int)
 

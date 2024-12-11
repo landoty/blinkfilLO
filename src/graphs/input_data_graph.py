@@ -1,7 +1,5 @@
 """ Definitions for the InputDataGraph """
 # graphs/input_data_graph.py
-import re
-
 from language.base_tokens import BaseTokens
 
 class InputDataGraph:
@@ -224,12 +222,11 @@ class InputDataGraph:
                 matches = [i for i in range(len(s)) if s.startswith(substr, i)]
                 n = len(matches)
                 for k, match in enumerate(matches):
-                    # start , end = span.start()+1, span.end()+1
                     start = match
                     end = match + span
-                    if start == i and end == j:
+                    if start+1 == i and end+1 == j:
                         graph.label_edges(
-                            ((start,), (end,)),
+                            ((start+1,), (end+1,)),
                             [((substr), (k+1, k-n))]
                         )
         return graph
