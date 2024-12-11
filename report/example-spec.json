@@ -1,0 +1,34 @@
+{
+  "Examples": [
+    {
+      "Input": [
+        "Landen, Doty"
+      ],
+      "Output": "LD"
+    },
+    {
+      "Input": [
+        "Jaxon, Avena"
+      ],
+      "Output": "JA"
+    },
+    {
+      "Input": [
+        "John, Smith"
+      ],
+      "Output": "JS"
+    }, 
+    {
+      "Input": [
+        "Vince, Carter"
+      ],
+      "Output": "VC"
+    },
+    {
+      "Input": [
+        "Samantha, Burke"
+      ],
+      "Output": "SB"
+    }
+  ]
+}
