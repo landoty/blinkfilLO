@@ -89,10 +89,11 @@ class SynthDriver:
             inp, out = examples[i]
             dag_p.learn([inp], out, idg)
             dag = DAG.intersect(dag_p, dag)
+
         dag.rank()
         return dag
 
-    def extract_formula(self, dag: DAG) -> list[str]:
+    def extract_formula(self, dag: DAG) -> str:
         """ Given a DAG of expressions, extract LibreOffice Formulaes """
         start = dag.start_node
         final = dag.final_node
