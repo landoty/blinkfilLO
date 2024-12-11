@@ -6,8 +6,6 @@ import sys
 import argparse
 import json
 from synthesizer import SynthDriver
-from extension import CalcHandler
-
 
 input_data = [
     [
@@ -86,22 +84,14 @@ if __name__ == "__main__":
         print("Running hard-coded example")
 
     try:
-        handler = CalcHandler()
-        handler.get_synth_input()
-
         synth = SynthDriver()
-        print("\nGenerating IDG...")
         IDG = synth.gen_input_data_graph(input_data)
-        print("Generating DAG...")
         DAG = synth.gen_dag(input_data, output_data, IDG)
 
-        print("Extracting_formula...\n")
-        formulas = synth.extract_formula(DAG)
-        handler.formula = formulas
-        handler.write_to_calc()
-        
+        formula = synth.extract_formula(DAG)
+        formula = formula.replace("<input>", args.input_cell)
+        print(formula)
 
     except Exception as e:
         print(f"error: {e}")
-        print("failed")
         sys.exit(1)

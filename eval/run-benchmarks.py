@@ -10,8 +10,6 @@ import argparse
 import numpy as np
 import pandas as pd
 
-import pdb
-
 sys.path.append("../src")
 from synthesizer import SynthDriver
 
@@ -42,7 +40,7 @@ def run_bench(benchmark: str) -> list:
     # setup time and timer
     status = None
     end = -1
-    signal.alarm(2)
+    signal.alarm(1)
     start = time.time()
     try:
         synth = SynthDriver()
@@ -84,7 +82,7 @@ if __name__ == "__main__":
             # each benchmark should be a directory
             # with spec.json and meta.json
             # https://github.com/microsoft/prose-benchmarks
-            if not os.path.isdir(bench):
+            if not os.path.isdir(os.path.join(args.bench, bench)):
                 continue
 
             if "spec.json" in os.listdir(os.path.join(args.bench, bench)):
@@ -106,11 +104,10 @@ if __name__ == "__main__":
 
         # print results
         print(f"[+] Successful Benchmarks: {len(successful)}")
-        print(f"[+] Average Time of Successful: {successful['Time'].mean()}")
+        print(f"[+] Average Time of Successful: {successful['Time'].describe()}")
         print(f"[+] Failed Benchmarks: {len(failed)}")
         print(f"[+] Timed Out Benchmarks: {len(timeout)}")
         print(f"[+] Saving results to: {args.csv}")
-        df.to_csv(args.csv, index=True)
-
+        df.to_csv(args.csv)
     else:
         print("Provide a directory with the benchmarks")

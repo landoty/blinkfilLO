@@ -1,6 +1,6 @@
 """ Definitions for the string transformation language """
 # src/language/expressions.py
-
+import pdb
 from typing import Union
 from enum import Enum
 from .base_tokens import BaseTokens
@@ -45,8 +45,6 @@ class StringExpr(Expr):
 
                 right_index = best.to_formula()
 
-                # print(left_index)
-                # print(right_index)
                 substr += f"{right_index}-({left_index})"
                 formula += f"{substr})"
                 formula += ","
@@ -81,7 +79,9 @@ class ConstStringExpr(Expr):
         return f"ConstStr({self.const_str})"
 
     def __eq__(self, other) -> bool:
-        return hash(self) == hash(other)
+        if hasattr(other, "const_str"):
+            return self.const_str == other.const_str
+        return False
 
     def __len__(self) -> int:
         return len(self.const_str)
@@ -116,8 +116,11 @@ class SubStringExpr(Expr):
         return len(self.v)
 
     @staticmethod
-    def interesct(substr1, substr2) -> 'SubStringExpr':
+    def intersect(substr1, substr2) -> 'SubStringExpr':
         """ intersect two substring expressions """
+        if not hasattr(substr1, "pl") or not hasattr(substr2, "pl"):
+            return None
+
         left = substr1.pl & substr2.pl
         if len(left) == 0:
             return None
